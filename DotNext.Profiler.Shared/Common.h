@@ -12,5 +12,9 @@ struct CAtlException {
 	CAtlException(HRESULT hr) : HResult(hr) {}
 };
 #define AtlThrow(hr) throw CAtlException(hr)
-//#include <atl.h>
+#if defined(_DEBUG) && !defined(ATLASSERT)
+#define ATLASSERT(expr) _ASSERTE(expr)
+#endif // ATLASSERT
+
+#include <atl.h>
 #endif

@@ -1,0 +1,20 @@
+﻿<Window x:Class="AsyncMandelbrot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Async Mandelbrot" Width="600" Height="600" >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Image Grid.Row="1" x:Name="_image" Stretch="Fill"
+               MouseLeftButtonDown="OnMouseDown" MouseMove="OnMouseMove" MouseLeftButtonUp="OnMouseUp">
+        </Image>
+        <Path Grid.Row="1" x:Name="_selection" Stroke="Red" StrokeThickness="1" >
+            <Path.Data>
+                <RectangleGeometry x:Name="_rect" />
+            </Path.Data>
+        </Path>
+        <Button Content="Reset" Margin="6" Click="OnReset"/>
+    </Grid>
+</Window>

@@ -20,6 +20,7 @@ public:
 
 	static Logger& Get();
 	static void Shutdown();
+	static const char* LogLevelToString(LogLevel level);
 
 	LogLevel GetLevel() const;
 	void SetLevel(LogLevel level);
@@ -36,7 +37,7 @@ public:
 #else
 		sprintf(buffer, args...);
 #endif
-		_file << buffer << std::endl;
+		DoLog(level, buffer);
 
 	}
 	template<typename... Args>
@@ -53,6 +54,9 @@ public:
 	static void Warning(Args&&... args) {
 		Get().Log(LogLevel::Warning, std::forward<Args>(args)...);
 	}
+
+private:
+	void DoLog(LogLevel level, const char* text);
 
 private:
 	Mutex _lock;

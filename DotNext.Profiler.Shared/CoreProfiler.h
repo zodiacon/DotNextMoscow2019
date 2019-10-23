@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common.h"
 #include <cor.h>
 #include <corprof.h>
 #include <atomic>
@@ -104,5 +105,6 @@ public:
 
 private:
 	std::atomic<unsigned> _refCount{ 1 };
+	CComPtr<ICorProfilerInfo4> _info;
 };
 

@@ -25,3 +25,21 @@ int OS::GetPid() {
 	return getpid();
 #endif
 }
+
+int OS::GetTid() {
+#ifdef _WINDOWS
+	return ::GetCurrentThreadId();
+#else
+	return pthread_self();
+#endif
+}
+
+std::string OS::GetCurrentDir() {
+	char buffer[512] = { 0 };
+#ifdef _WINDOWS
+	::GetCurrentDirectoryA(sizeof(buffer), buffer);
+#else
+	getcwd(buffer, sizeof(buffer));
+#endif
+	return buffer;
+}

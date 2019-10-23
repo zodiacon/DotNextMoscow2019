@@ -24,14 +24,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Common.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Dev\DotNextMoscow2019\DotNext.Profiler.Shared\Mutex.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)AutoLock.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)CoreProfilerFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CoreProfiler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mutex.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Common">
