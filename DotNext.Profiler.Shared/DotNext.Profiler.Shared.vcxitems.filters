@@ -29,7 +29,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)CoreProfilerFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CoreProfiler.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Mutex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mutex.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Common">

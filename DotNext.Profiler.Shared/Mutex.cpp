@@ -1,7 +1,26 @@
 #include "Mutex.h"
 
-#ifndef _WINDOWS
+#ifdef _WINDOWS
+#include <Windows.h>
 
+struct Mutex::Impl {
+	Impl() {
+		::InitializeCriticalSection(&_cs);
+	}
+
+	void lock() {
+		::EnterCriticalSection(&_cs);
+	}
+
+	void unlock() {
+		::LeaveCriticalSection(&_cs);
+	}
+
+private:
+	CRITICAL_SECTION _cs;
+};
+
+#else
 #include <mutex>
 
 struct Mutex::Impl {
@@ -16,8 +35,9 @@ struct Mutex::Impl {
 private:
 	std::mutex _mutex;
 };
+#endif
 
-Mutex::Mutex() : _impl(new Impl) {}
+Mutex::Mutex() : _impl(std::make_unique<Impl>()) {}
 Mutex::~Mutex() = default;
 
 void Mutex::lock() {
@@ -28,4 +48,3 @@ void Mutex::unlock() {
 	_impl->unlock();
 }
 
-#endif

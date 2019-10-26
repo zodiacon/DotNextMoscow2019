@@ -1,7 +1,27 @@
+#include <assert.h>
 #include "CoreProfiler.h"
+#include "Logger.h"
+#include "OS.h"
 
 HRESULT __stdcall CoreProfiler::QueryInterface(REFIID riid, void** ppvObject) {
-	return E_NOTIMPL;
+	if (ppvObject == nullptr)
+		return E_POINTER;
+
+	if (riid == __uuidof(IUnknown) ||
+		riid == __uuidof(ICorProfilerCallback) ||
+		riid == __uuidof(ICorProfilerCallback2) ||
+		riid == __uuidof(ICorProfilerCallback3) ||
+		riid == __uuidof(ICorProfilerCallback4) ||
+		riid == __uuidof(ICorProfilerCallback5) ||
+		riid == __uuidof(ICorProfilerCallback6) ||
+		riid == __uuidof(ICorProfilerCallback7) ||
+		riid == __uuidof(ICorProfilerCallback8)) {
+		AddRef();
+		*ppvObject = static_cast<ICorProfilerCallback8*>(this);
+		return S_OK;
+	}
+
+	return E_NOINTERFACE;
 }
 
 ULONG __stdcall CoreProfiler::AddRef(void) {
@@ -17,365 +37,397 @@ ULONG __stdcall CoreProfiler::Release(void) {
 }
 
 HRESULT CoreProfiler::Initialize(IUnknown* pICorProfilerInfoUnk) {
-	return E_NOTIMPL;
+	Logger::Debug(__FUNCTION__);
+
+	pICorProfilerInfoUnk->QueryInterface(&_info);
+	assert(_info);
+
+	_info->SetEventMask(
+		COR_PRF_MONITOR_MODULE_LOADS |
+		COR_PRF_MONITOR_ASSEMBLY_LOADS |
+		COR_PRF_MONITOR_GC |
+		COR_PRF_MONITOR_CLASS_LOADS |
+		COR_PRF_MONITOR_THREADS);
+
+	return S_OK;
 }
 
 HRESULT CoreProfiler::Shutdown() {
-	return E_NOTIMPL;
+	Logger::Info("Profiler shutdown (PID=%d)", OS::GetPid());
+	_info.Release();
+
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AppDomainCreationStarted(AppDomainID appDomainId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AppDomainCreationFinished(AppDomainID appDomainId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AppDomainShutdownStarted(AppDomainID appDomainId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AppDomainShutdownFinished(AppDomainID appDomainId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AssemblyLoadStarted(AssemblyID assemblyId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	WCHAR name[512];
+	ULONG size;
+	AppDomainID ad;
+	ModuleID module;
+	if (SUCCEEDED(_info->GetAssemblyInfo(assemblyId, sizeof(name) / sizeof(name[0]), &size, name, &ad, &module))) {
+		Logger::Info("Assembly loaded: %s (id=0x%p)", OS::UnicodeToAnsi(name).c_str(), assemblyId);
+	}
+
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AssemblyUnloadStarted(AssemblyID assemblyId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::AssemblyUnloadFinished(AssemblyID assemblyId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ModuleLoadStarted(ModuleID moduleId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ModuleLoadFinished(ModuleID moduleId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ModuleUnloadStarted(ModuleID moduleId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ModuleUnloadFinished(ModuleID moduleId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ModuleAttachedToAssembly(ModuleID moduleId, AssemblyID AssemblyId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ClassLoadStarted(ClassID classId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	ModuleID module;
+	mdTypeDef type;
+	if (SUCCEEDED(_info->GetClassIDInfo(classId, &module, &type))) {
+		
+	}
+	
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ClassUnloadStarted(ClassID classId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ClassUnloadFinished(ClassID classId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::FunctionUnloadStarted(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::JITCachedFunctionSearchStarted(FunctionID functionId, BOOL* pbUseCachedFunction) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::JITCachedFunctionSearchFinished(FunctionID functionId, COR_PRF_JIT_CACHE result) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::JITFunctionPitched(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::JITInlining(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ThreadCreated(ThreadID threadId) {
-	return E_NOTIMPL;
+	Logger::Debug(__FUNCTION__);
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ThreadDestroyed(ThreadID threadId) {
-	return E_NOTIMPL;
+	Logger::Debug(__FUNCTION__);
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId) {
-	return E_NOTIMPL;
+	Logger::Debug(__FUNCTION__);
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingClientInvocationStarted() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingClientSendingMessage(GUID* pCookie, BOOL fIsAsync) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingClientReceivingReply(GUID* pCookie, BOOL fIsAsync) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingClientInvocationFinished() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingServerReceivingMessage(GUID* pCookie, BOOL fIsAsync) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingServerInvocationStarted() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingServerInvocationReturned() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RemotingServerSendingReply(GUID* pCookie, BOOL fIsAsync) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::UnmanagedToManagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ManagedToUnmanagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeSuspendStarted(COR_PRF_SUSPEND_REASON suspendReason) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeSuspendFinished() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeSuspendAborted() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeResumeStarted() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeResumeFinished() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeThreadSuspended(ThreadID threadId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RuntimeThreadResumed(ThreadID threadId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::MovedReferences(ULONG cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, ULONG* cObjectIDRangeLength) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ObjectAllocated(ObjectID objectId, ClassID classId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ObjectsAllocatedByClass(ULONG cClassCount, ClassID* classIds, ULONG* cObjects) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ObjectReferences(ObjectID objectId, ClassID classId, ULONG cObjectRefs, ObjectID* objectRefIds) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RootReferences(ULONG cRootRefs, ObjectID* rootRefIds) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionThrown(ObjectID thrownObjectId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionSearchFunctionEnter(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionSearchFunctionLeave() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionSearchFilterEnter(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionSearchFilterLeave() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionSearchCatcherFound(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionOSHandlerEnter(UINT_PTR __unused) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionOSHandlerLeave(UINT_PTR __unused) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionUnwindFunctionEnter(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionUnwindFunctionLeave() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionUnwindFinallyEnter(FunctionID functionId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionUnwindFinallyLeave() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionCatcherLeave() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::COMClassicVTableCreated(ClassID wrappedClassId, const GUID& implementedIID, void* pVTable, ULONG cSlots) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::COMClassicVTableDestroyed(ClassID wrappedClassId, const GUID& implementedIID, void* pVTable) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionCLRCatcherFound() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ExceptionCLRCatcherExecute() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR* name) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::GarbageCollectionStarted(int cGenerations, BOOL* generationCollected, COR_PRF_GC_REASON reason) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::SurvivingReferences(ULONG cSurvivingObjectIDRanges, ObjectID* objectIDRangeStart, ULONG* cObjectIDRangeLength) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::GarbageCollectionFinished() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::RootReferences2(ULONG cRootRefs, ObjectID* rootRefIds, COR_PRF_GC_ROOT_KIND* rootKinds, COR_PRF_GC_ROOT_FLAGS* rootFlags, UINT_PTR* rootIds) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::HandleCreated(GCHandleID handleId, ObjectID initialObjectId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::HandleDestroyed(GCHandleID handleId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ProfilerAttachComplete() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ProfilerDetachSucceeded() {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ReJITCompilationStarted(FunctionID functionId, ReJITID rejitId, BOOL fIsSafeToBlock) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::GetReJITParameters(ModuleID moduleId, mdMethodDef methodId, ICorProfilerFunctionControl* pFunctionControl) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ReJITCompilationFinished(FunctionID functionId, ReJITID rejitId, HRESULT hrStatus, BOOL fIsSafeToBlock) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ReJITError(ModuleID moduleId, mdMethodDef methodId, FunctionID functionId, HRESULT hrStatus) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::MovedReferences2(ULONG cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, SIZE_T* cObjectIDRangeLength) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::SurvivingReferences2(ULONG cSurvivingObjectIDRanges, ObjectID* objectIDRangeStart, SIZE_T* cObjectIDRangeLength) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ConditionalWeakTableElementReferences(ULONG cRootRefs, ObjectID* keyRefIds, ObjectID* valueRefIds, GCHandleID* rootIds) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::GetAssemblyReferences(const WCHAR* wszAssemblyPath, ICorProfilerAssemblyReferenceProvider* pAsmRefProvider) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::ModuleInMemorySymbolsUpdated(ModuleID moduleId) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE pILHeader, ULONG cbILHeader) {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT CoreProfiler::DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) {
-	return E_NOTIMPL;
+	return S_OK;
 }

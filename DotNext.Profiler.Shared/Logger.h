@@ -16,8 +16,6 @@ enum class LogLevel {
 
 class Logger final {
 public:
-	Logger();
-
 	static Logger& Get();
 	static void Shutdown();
 	static const char* LogLevelToString(LogLevel level);
@@ -27,7 +25,7 @@ public:
 
 	template<typename... Args>
 	void Log(LogLevel level, Args&&... args) {
-		if (level > _level)
+		if (level < _level)
 			return;
 
 		AutoLock locker(_lock);
@@ -41,22 +39,34 @@ public:
 
 	}
 	template<typename... Args>
-	static void Info(Args&&... args) {
+	__forceinline static void Info(Args&&... args) {
 		Get().Log(LogLevel::Info, std::forward<Args>(args)...);
 	}
 
 	template<typename... Args>
-	static void Error(Args&&... args) {
+	__forceinline static void Debug(Args&&... args) {
+		Get().Log(LogLevel::Debug, std::forward<Args>(args)...);
+	}
+
+	template<typename... Args>
+	__forceinline static void Error(Args&&... args) {
 		Get().Log(LogLevel::Error, std::forward<Args>(args)...);
 	}
 
 	template<typename... Args>
-	static void Warning(Args&&... args) {
+	__forceinline static void Warning(Args&&... args) {
 		Get().Log(LogLevel::Warning, std::forward<Args>(args)...);
 	}
 
+	template<typename... Args>
+	__forceinline static void Verbose(Args&&... args) {
+		Get().Log(LogLevel::Verbose, std::forward<Args>(args)...);
+	}
+
 private:
+	Logger();
 	void DoLog(LogLevel level, const char* text);
+	void Term();
 
 private:
 	Mutex _lock;

@@ -20,6 +20,8 @@ extern "C" BOOL __stdcall DllMain(HINSTANCE hInstDll, DWORD reason, PVOID) {
 class __declspec(uuid("805A308B-061C-47F3-9B30-F785C3186E81")) CoreProfiler;
 
 extern "C" HRESULT __stdcall DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv) {
+	Logger::Info(__FUNCTION__);
+
 	if (rclsid == __uuidof(CoreProfiler)) {
 		static CoreProfilerFactory factory;
 		return factory.QueryInterface(riid, ppv);

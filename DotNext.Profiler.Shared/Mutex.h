@@ -1,12 +1,5 @@
 #pragma once
 
-#ifdef _WINDOWS
-
-#include <mutex>
-using Mutex = std::mutex;
-
-#else
-
 #include <memory>
 
 class Mutex {
@@ -21,6 +14,5 @@ private:
 	struct Impl;
 	std::unique_ptr<Impl> _impl;
 };
-#endif
 
 

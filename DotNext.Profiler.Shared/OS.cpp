@@ -43,3 +43,12 @@ std::string OS::GetCurrentDir() {
 #endif
 	return buffer;
 }
+
+std::string OS::UnicodeToAnsi(const WCHAR* str) {
+#ifdef _WINDOWS
+	std::wstring ws(str);
+#else
+	std::wstring ws((const wchar_t*)str);
+#endif
+	return std::string(ws.begin(), ws.end());
+}
