@@ -37,7 +37,7 @@ private:
 };
 #endif
 
-Mutex::Mutex() : _impl(std::make_unique<Impl>()) {}
+Mutex::Mutex() : _impl(new Impl) {}
 Mutex::~Mutex() = default;
 
 void Mutex::lock() {

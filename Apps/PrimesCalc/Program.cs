@@ -4,9 +4,9 @@ using System;
 namespace PrimesCalc {
 	static class Program {
 		static void Main(string[] args) {
-			Console.Write("Calculating primes...");
+			Console.WriteLine("Calculating primes...");
 
-			int first = 3, last = 100;
+            int first = 3, last = 100;
 
 			if (args.Length > 1) {
 				int.TryParse(args[0], out first);

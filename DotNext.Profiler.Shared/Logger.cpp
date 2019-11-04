@@ -46,6 +46,7 @@ void Logger::Term() {
 #endif
 
 void Logger::DoLog(LogLevel level, const char* text) {
+
 	// build message with time, level, pid, tid, text
 	char time[48];
 	const auto now = ::time(nullptr);
@@ -62,13 +63,19 @@ void Logger::DoLog(LogLevel level, const char* text) {
 	message
 		<< "[" << time << "]"
 		<< " [" << LogLevelToString(level) << "]"
-		<< " [" << OS::GetPid() << "," << OS::GetTid() << "] "
+		<< " [" << OS::GetPid() << "," 
+#ifndef _WINDOWS
+		<< "0x" << std::hex 
+#endif
+		<< OS::GetTid() << std::dec << "] "
 		<< text << std::endl;
 
 	auto smessage = message.str();
 
-	AutoLock locker(_lock);
-	_file << smessage;
+	{
+		AutoLock locker(_lock);
+		_file << smessage;
+	}
 
 #if defined(_WINDOWS) && defined(_DEBUG)
 	OutputDebugStringA(smessage.c_str());
@@ -76,7 +83,7 @@ void Logger::DoLog(LogLevel level, const char* text) {
 }
 
 Logger::Logger() {
-	auto logDir = OS::ReadEnvironmentVariable("DotNext_LogDir");
+	auto logDir = OS::ReadEnvironmentVariable("DOTNEXT_LOGDIR");
 	if (logDir.empty())
 		logDir = OS::GetCurrentDir();
 

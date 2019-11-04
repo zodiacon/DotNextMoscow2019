@@ -28,7 +28,6 @@ public:
 		if (level < _level)
 			return;
 
-		AutoLock locker(_lock);
 		char buffer[1 << 10];
 #ifdef _WINDOWS
 		sprintf_s(buffer, args...);

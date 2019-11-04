@@ -4,6 +4,7 @@
 #include <cor.h>
 #include <corprof.h>
 #include <atomic>
+#include <string>
 
 class CoreProfiler : public ICorProfilerCallback8 {
 public:
@@ -104,7 +105,9 @@ public:
 	HRESULT __stdcall DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) override;
 
 private:
+	std::wstring GetTypeName(mdTypeDef type, ModuleID module) const;
+
 	std::atomic<unsigned> _refCount{ 1 };
-	CComPtr<ICorProfilerInfo4> _info;
+	CComPtr<ICorProfilerInfo8> _info;
 };
 

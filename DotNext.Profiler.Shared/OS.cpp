@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #endif
 
 std::string OS::ReadEnvironmentVariable(const char* name) {
@@ -48,7 +49,7 @@ std::string OS::UnicodeToAnsi(const WCHAR* str) {
 #ifdef _WINDOWS
 	std::wstring ws(str);
 #else
-	std::wstring ws((const wchar_t*)str);
+	std::basic_string<WCHAR> ws(str);
 #endif
 	return std::string(ws.begin(), ws.end());
 }

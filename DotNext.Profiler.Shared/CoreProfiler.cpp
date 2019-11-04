@@ -127,7 +127,14 @@ HRESULT CoreProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
 	ModuleID module;
 	mdTypeDef type;
 	if (SUCCEEDED(_info->GetClassIDInfo(classId, &module, &type))) {
-		
+		CComPtr<IMetaDataImport> spMetadata;
+		HR(_info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&spMetadata)));
+		WCHAR name[256];
+		ULONG nameSize;
+		DWORD flags;
+		mdTypeDef baseType;
+		HR(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType));
+		Logger::Debug("Type %s loaded", OS::UnicodeToAnsi(name).c_str());
 	}
 	
 	return S_OK;
@@ -146,6 +153,11 @@ HRESULT CoreProfiler::FunctionUnloadStarted(FunctionID functionId) {
 }
 
 HRESULT CoreProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) {
+	ClassID classId;
+	ModuleID moduleId;
+	mdToken token;
+	HR(_info->GetFunctionInfo(functionId, &classId, &moduleId, &token));
+
 	return S_OK;
 }
 
@@ -170,17 +182,19 @@ HRESULT CoreProfiler::JITInlining(FunctionID callerId, FunctionID calleeId, BOOL
 }
 
 HRESULT CoreProfiler::ThreadCreated(ThreadID threadId) {
-	Logger::Debug(__FUNCTION__);
+	Logger::Info("Thread 0x%p created", threadId);
+
 	return S_OK;
 }
 
 HRESULT CoreProfiler::ThreadDestroyed(ThreadID threadId) {
-	Logger::Debug(__FUNCTION__);
+	Logger::Info("Thread 0x%p destroyed", threadId);
+
 	return S_OK;
 }
 
 HRESULT CoreProfiler::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId) {
-	Logger::Debug(__FUNCTION__);
+	Logger::Info("Thread 0x%p assigned to OS thread %d", managedThreadId, osThreadId);
 	return S_OK;
 }
 
@@ -349,6 +363,9 @@ HRESULT CoreProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR*
 }
 
 HRESULT CoreProfiler::GarbageCollectionStarted(int cGenerations, BOOL* generationCollected, COR_PRF_GC_REASON reason) {
+	Logger::Info("GC started. Gen0=%s, Gen0=%s, Gen2=%s",
+		generationCollected[0] ? "Yes" : "No", generationCollected[1] ? "Yes" : "No", generationCollected[2] ? "Yes" : "No");
+
 	return S_OK;
 }
 
@@ -357,6 +374,8 @@ HRESULT CoreProfiler::SurvivingReferences(ULONG cSurvivingObjectIDRanges, Object
 }
 
 HRESULT CoreProfiler::GarbageCollectionFinished() {
+	Logger::Info("GC finished");
+
 	return S_OK;
 }
 
@@ -431,3 +450,17 @@ HRESULT CoreProfiler::DynamicMethodJITCompilationStarted(FunctionID functionId, 
 HRESULT CoreProfiler::DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) {
 	return S_OK;
 }
+
+std::wstring CoreProfiler::GetTypeName(mdTypeDef type, ModuleID module) const {
+	CComPtr<IMetaDataImport> spMetadata;
+	if (SUCCEEDED(_info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&spMetadata)))) {
+		WCHAR name[256];
+		ULONG nameSize;
+		DWORD flags;
+		mdTypeDef baseType;
+		if (SUCCEEDED(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType)))
+			return std::wstring((const wchar_t*)name);
+	}
+	return L"";
+}
+

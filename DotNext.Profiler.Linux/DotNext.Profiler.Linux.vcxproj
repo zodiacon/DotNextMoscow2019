@@ -92,15 +92,28 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)</TargetName>
+    <MultiProcNumber>2</MultiProcNumber>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalIncludeDirectories>../coreclr/pal/inc/rt;../coreclr/pal/src/include;../coreclr/pal/prebuilt/inc;../coreclr/pal/inc;../coreclr/inc;%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_UNIX;PAL_STDCPP_COMPAT;BIT64;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_UNIX;PAL_STDCPP_COMPAT;BIT64;_DEBUG;UNICODE</PreprocessorDefinitions>
       <AdditionalOptions>-fms-extensions %(AdditionalOptions)</AdditionalOptions>
+      <Verbose>true</Verbose>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
+    <Link />
+    <PostBuildEvent>
+      <Command>copy $(TargetPath) $(SolutionDir)$(Platform)\$(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -109,6 +122,9 @@
       <PreprocessorDefinitions>PLATFORM_UNIX;PAL_STDCPP_COMPAT;BIT64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-fms-extensions %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <OutputFile>$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -18,3 +18,5 @@ struct CAtlException {
 
 #include <atl.h>
 #endif
+
+#define HR(x) { auto _hr = (x); if(FAILED(_hr)) return _hr; }
