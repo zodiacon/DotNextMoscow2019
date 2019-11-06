@@ -105,7 +105,16 @@ public:
 	HRESULT __stdcall DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) override;
 
 private:
-	std::wstring GetTypeName(mdTypeDef type, ModuleID module) const;
+	std::string GetTypeName(mdTypeDef type, ModuleID module) const;
+	std::string GetMethodName(FunctionID function) const;
+	static HRESULT __stdcall StackSnapshotCB(
+		FunctionID funcId,
+		UINT_PTR ip,
+		COR_PRF_FRAME_INFO frameInfo,
+		ULONG32 contextSize,
+		BYTE context[],
+		void* clientData
+	);
 
 	std::atomic<unsigned> _refCount{ 1 };
 	CComPtr<ICorProfilerInfo8> _info;

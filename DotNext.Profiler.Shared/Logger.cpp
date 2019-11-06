@@ -3,6 +3,7 @@
 #include <sstream>
 #include <assert.h>
 #include <time.h>
+#include <iomanip>
 
 Logger& Logger::Get() {
 	static Logger logger;
@@ -57,17 +58,17 @@ void Logger::DoLog(LogLevel level, const char* text) {
 #else
 	auto plt = localtime(&now);
 #endif
+	timespec ts;
+	timespec_get(&ts, TIME_UTC);
+	
 	strftime(time, sizeof(time), "%D %T", plt);
 
 	std::stringstream message;
 	message
-		<< "[" << time << "]"
+		<< "[" << time << "." << std::setw(3) << std::setfill('0') << (ts.tv_nsec / 1000000) << "]"
 		<< " [" << LogLevelToString(level) << "]"
 		<< " [" << OS::GetPid() << "," 
-#ifndef _WINDOWS
-		<< "0x" << std::hex 
-#endif
-		<< OS::GetTid() << std::dec << "] "
+		<< OS::GetTid() << "] "
 		<< text << std::endl;
 
 	auto smessage = message.str();

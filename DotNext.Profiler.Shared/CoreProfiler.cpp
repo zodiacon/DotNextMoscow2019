@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <vector>
+#include <string>
 #include "CoreProfiler.h"
 #include "Logger.h"
 #include "OS.h"
@@ -47,7 +49,9 @@ HRESULT CoreProfiler::Initialize(IUnknown* pICorProfilerInfoUnk) {
 		COR_PRF_MONITOR_ASSEMBLY_LOADS |
 		COR_PRF_MONITOR_GC |
 		COR_PRF_MONITOR_CLASS_LOADS |
-		COR_PRF_MONITOR_THREADS);
+		COR_PRF_MONITOR_THREADS |
+		COR_PRF_MONITOR_EXCEPTIONS |
+		COR_PRF_MONITOR_JIT_COMPILATION);
 
 	return S_OK;
 }
@@ -136,7 +140,7 @@ HRESULT CoreProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
 		HR(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType));
 		Logger::Debug("Type %s loaded", OS::UnicodeToAnsi(name).c_str());
 	}
-	
+
 	return S_OK;
 }
 
@@ -153,15 +157,14 @@ HRESULT CoreProfiler::FunctionUnloadStarted(FunctionID functionId) {
 }
 
 HRESULT CoreProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) {
-	ClassID classId;
-	ModuleID moduleId;
-	mdToken token;
-	HR(_info->GetFunctionInfo(functionId, &classId, &moduleId, &token));
+	Logger::Debug("JIT compilation started: %s", GetMethodName(functionId).c_str());
 
 	return S_OK;
 }
 
 HRESULT CoreProfiler::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) {
+	Logger::Debug("JIT compilation finished: %s", GetMethodName(functionId).c_str());
+
 	return S_OK;
 }
 
@@ -231,10 +234,12 @@ HRESULT CoreProfiler::RemotingServerSendingReply(GUID* pCookie, BOOL fIsAsync) {
 }
 
 HRESULT CoreProfiler::UnmanagedToManagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
+	Logger::Debug(__FUNCTION__);
 	return S_OK;
 }
 
 HRESULT CoreProfiler::ManagedToUnmanagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
+	Logger::Debug(__FUNCTION__);
 	return S_OK;
 }
 
@@ -287,6 +292,17 @@ HRESULT CoreProfiler::RootReferences(ULONG cRootRefs, ObjectID* rootRefIds) {
 }
 
 HRESULT CoreProfiler::ExceptionThrown(ObjectID thrownObjectId) {
+	ClassID classid;
+	HR(_info->GetClassFromObject(thrownObjectId, &classid));
+	ModuleID module;
+	mdTypeDef type;
+	HR(_info->GetClassIDInfo(classid, &module, &type));
+	Logger::Warning("Exception %s thrown", GetTypeName(type, module).c_str());
+
+	std::vector<std::string> data;
+	if (SUCCEEDED(_info->DoStackSnapshot(0, StackSnapshotCB, 0, &data, nullptr, 0))) {
+	}
+
 	return S_OK;
 }
 
@@ -363,6 +379,7 @@ HRESULT CoreProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR*
 }
 
 HRESULT CoreProfiler::GarbageCollectionStarted(int cGenerations, BOOL* generationCollected, COR_PRF_GC_REASON reason) {
+	Logger::Debug(__FUNCTION__);
 	Logger::Info("GC started. Gen0=%s, Gen0=%s, Gen2=%s",
 		generationCollected[0] ? "Yes" : "No", generationCollected[1] ? "Yes" : "No", generationCollected[2] ? "Yes" : "No");
 
@@ -451,7 +468,7 @@ HRESULT CoreProfiler::DynamicMethodJITCompilationFinished(FunctionID functionId,
 	return S_OK;
 }
 
-std::wstring CoreProfiler::GetTypeName(mdTypeDef type, ModuleID module) const {
+std::string CoreProfiler::GetTypeName(mdTypeDef type, ModuleID module) const {
 	CComPtr<IMetaDataImport> spMetadata;
 	if (SUCCEEDED(_info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&spMetadata)))) {
 		WCHAR name[256];
@@ -459,8 +476,36 @@ std::wstring CoreProfiler::GetTypeName(mdTypeDef type, ModuleID module) const {
 		DWORD flags;
 		mdTypeDef baseType;
 		if (SUCCEEDED(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType)))
-			return std::wstring((const wchar_t*)name);
+			return OS::UnicodeToAnsi(name);
 	}
-	return L"";
+	return "";
+}
+
+std::string CoreProfiler::GetMethodName(FunctionID function) const {
+	ModuleID module;
+	mdToken token;
+	mdTypeDef type;
+	ClassID classId;
+	if (FAILED(_info->GetFunctionInfo(function, &classId, &module, &token)))
+		return "";
+
+	CComPtr<IMetaDataImport> spMetadata;
+	if (FAILED(_info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&spMetadata))))
+		return "";
+	PCCOR_SIGNATURE sig;
+	ULONG blobSize, size, attributes;
+	WCHAR name[256];
+	DWORD flags;
+	ULONG codeRva;
+	if (FAILED(spMetadata->GetMethodProps(token, &type, name, 256, &size, &attributes, &sig, &blobSize, &codeRva, &flags)))
+		return "";
+
+	return GetTypeName(type, module) + "::" + OS::UnicodeToAnsi(name);
+}
+
+HRESULT __stdcall CoreProfiler::StackSnapshotCB(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAME_INFO frameInfo,
+	ULONG32 contextSize, BYTE context[], void* clientData) {
+
+	return S_OK;
 }
 

@@ -70,6 +70,6 @@ private:
 private:
 	Mutex _lock;
 	std::ofstream _file;
-	LogLevel _level = LogLevel::Info;
+	LogLevel _level = LogLevel::Debug;
 };
 

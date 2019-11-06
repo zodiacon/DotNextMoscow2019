@@ -98,6 +98,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>$(ProjectName)</TargetName>
+    <MultiProcNumber>2</MultiProcNumber>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
@@ -119,12 +120,11 @@
     <ClCompile>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <AdditionalIncludeDirectories>../coreclr/pal/inc/rt;../coreclr/pal/src/include;../coreclr/pal/prebuilt/inc;../coreclr/pal/inc;../coreclr/inc;%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_UNIX;PAL_STDCPP_COMPAT;BIT64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;PLATFORM_UNIX;PAL_STDCPP_COMPAT;BIT64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-fms-extensions %(AdditionalOptions)</AdditionalOptions>
+      <Verbose>true</Verbose>
     </ClCompile>
-    <Link>
-      <OutputFile>$(TargetName)$(TargetExt)</OutputFile>
-    </Link>
+    <Link />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
