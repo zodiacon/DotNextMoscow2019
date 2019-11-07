@@ -65,7 +65,7 @@ void Logger::DoLog(LogLevel level, const char* text) {
 
 	std::stringstream message;
 	message
-		<< "[" << time << "." << std::setw(3) << std::setfill('0') << (ts.tv_nsec / 1000000) << "]"
+		<< "[" << time << "." << std::setw(6) << std::setfill('0') << (ts.tv_nsec / 1000) << "]"
 		<< " [" << LogLevelToString(level) << "]"
 		<< " [" << OS::GetPid() << "," 
 		<< OS::GetTid() << "] "

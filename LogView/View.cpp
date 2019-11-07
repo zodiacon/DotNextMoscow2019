@@ -84,9 +84,11 @@ bool CView::LoadFile(PCWSTR path) {
 		st.wHour = ::_wtoi(token.Left(2));
 		st.wMinute = ::_wtoi(token.Mid(3, 2));
 		st.wSecond = ::_wtoi(token.Mid(6, 2));
-
 		line.DateTime = st;
 		::SystemTimeToFileTime(&st, (FILETIME*)& line.DateTime64);
+		int us = ::_wtoi(token.Mid(9, 6));
+		line.DateTime64 += us;
+		line.Microsec = us;
 
 		// log level
 
@@ -120,7 +122,7 @@ LRESULT CView::OnGetDispInfo(int, LPNMHDR hdr, BOOL&) {
 	if (item.mask & LVIF_TEXT) {
 		switch (item.iSubItem) {
 			case 0:		// date/time
-				::StringCchCopy(item.pszText, item.cchTextMax, CTime(data.DateTime).Format(L"%D %X"));
+				::StringCchPrintf(item.pszText, item.cchTextMax, L"%s.%06d", CTime(data.DateTime).Format(L"%D %X"), data.Microsec);
 				break;
 
 			case 1:		// level
@@ -191,7 +193,7 @@ LRESULT CView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		int Width;
 		int Format = LVCFMT_LEFT;
 	} columns[] = {
-		{ L"Date / Time", 120 },
+		{ L"Date / Time", 150 },
 		{ L"Level", 100 },
 		{ L"Process ID", 100, LVCFMT_RIGHT },
 		{ L"Thread ID", 100, LVCFMT_RIGHT },

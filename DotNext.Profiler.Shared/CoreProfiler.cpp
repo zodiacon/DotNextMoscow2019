@@ -380,7 +380,7 @@ HRESULT CoreProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR*
 
 HRESULT CoreProfiler::GarbageCollectionStarted(int cGenerations, BOOL* generationCollected, COR_PRF_GC_REASON reason) {
 	Logger::Debug(__FUNCTION__);
-	Logger::Info("GC started. Gen0=%s, Gen0=%s, Gen2=%s",
+	Logger::Info("GC started. Gen0=%s, Gen1=%s, Gen2=%s",
 		generationCollected[0] ? "Yes" : "No", generationCollected[1] ? "Yes" : "No", generationCollected[2] ? "Yes" : "No");
 
 	return S_OK;

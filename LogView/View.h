@@ -58,6 +58,7 @@ private:
 	struct LineInfo {
 		SYSTEMTIME DateTime;
 		int64_t DateTime64;
+		int Microsec;
 		LogLevel Level;
 		unsigned Pid, Tid;
 		CString Module;
