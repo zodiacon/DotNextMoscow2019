@@ -5,6 +5,27 @@
 #include <corprof.h>
 #include <atomic>
 #include <string>
+#include <map>
+
+#pragma region ClassInfo
+struct ClassInfo {
+	ClassInfo(mdTypeDef type, ModuleID module) : Type(type), Module(module) {}
+
+	bool operator==(const ClassInfo& other) const {
+		return Type == other.Type && Module == other.Module;
+	}
+
+	mdTypeDef Type;
+	ModuleID Module;
+};
+
+template<>
+struct std::hash<ClassInfo> {
+	size_t operator()(const ClassInfo& ci) const {
+		return ci.Module ^ ci.Type;
+	}
+};
+#pragma endregion
 
 class CoreProfiler : public ICorProfilerCallback8 {
 public:
@@ -107,6 +128,7 @@ public:
 private:
 	std::string GetTypeName(mdTypeDef type, ModuleID module) const;
 	std::string GetMethodName(FunctionID function) const;
+
 	static HRESULT __stdcall StackSnapshotCB(
 		FunctionID funcId,
 		UINT_PTR ip,
@@ -117,6 +139,7 @@ private:
 	);
 
 	std::atomic<unsigned> _refCount{ 1 };
+	std::map<ClassInfo, std::string> _types;
 	CComPtr<ICorProfilerInfo8> _info;
 };
 

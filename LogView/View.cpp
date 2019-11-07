@@ -193,7 +193,7 @@ LRESULT CView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		int Width;
 		int Format = LVCFMT_LEFT;
 	} columns[] = {
-		{ L"Date / Time", 150 },
+		{ L"Date / Time", 170 },
 		{ L"Level", 100 },
 		{ L"Process ID", 100, LVCFMT_RIGHT },
 		{ L"Thread ID", 100, LVCFMT_RIGHT },

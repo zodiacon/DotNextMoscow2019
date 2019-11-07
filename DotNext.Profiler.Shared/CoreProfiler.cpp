@@ -52,6 +52,7 @@ HRESULT CoreProfiler::Initialize(IUnknown* pICorProfilerInfoUnk) {
 		COR_PRF_MONITOR_THREADS |
 		COR_PRF_MONITOR_EXCEPTIONS |
 		COR_PRF_MONITOR_JIT_COMPILATION);
+	//|	COR_PRF_MONITOR_OBJECT_ALLOCATED | COR_PRF_ENABLE_OBJECT_ALLOCATED);
 
 	return S_OK;
 }
@@ -131,14 +132,8 @@ HRESULT CoreProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
 	ModuleID module;
 	mdTypeDef type;
 	if (SUCCEEDED(_info->GetClassIDInfo(classId, &module, &type))) {
-		CComPtr<IMetaDataImport> spMetadata;
-		HR(_info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&spMetadata)));
-		WCHAR name[256];
-		ULONG nameSize;
-		DWORD flags;
-		mdTypeDef baseType;
-		HR(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType));
-		Logger::Debug("Type %s loaded", OS::UnicodeToAnsi(name).c_str());
+		auto name = GetTypeName(type, module);
+		Logger::Debug("Type %s loaded", name.c_str());
 	}
 
 	return S_OK;
@@ -234,12 +229,12 @@ HRESULT CoreProfiler::RemotingServerSendingReply(GUID* pCookie, BOOL fIsAsync) {
 }
 
 HRESULT CoreProfiler::UnmanagedToManagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
-	Logger::Debug(__FUNCTION__);
+	Logger::Verbose(__FUNCTION__);
 	return S_OK;
 }
 
 HRESULT CoreProfiler::ManagedToUnmanagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
-	Logger::Debug(__FUNCTION__);
+	Logger::Verbose(__FUNCTION__);
 	return S_OK;
 }
 
@@ -276,6 +271,13 @@ HRESULT CoreProfiler::MovedReferences(ULONG cMovedObjectIDRanges, ObjectID* oldO
 }
 
 HRESULT CoreProfiler::ObjectAllocated(ObjectID objectId, ClassID classId) {
+	ModuleID module;
+	mdTypeDef type;
+	if (SUCCEEDED(_info->GetClassIDInfo(classId, &module, &type))) {
+		auto name = GetTypeName(type, module);
+		if(!name.empty())
+			Logger::Debug("Allocated object 0x%p of type %s", objectId, name.c_str());
+	}
 	return S_OK;
 }
 
@@ -301,6 +303,7 @@ HRESULT CoreProfiler::ExceptionThrown(ObjectID thrownObjectId) {
 
 	std::vector<std::string> data;
 	if (SUCCEEDED(_info->DoStackSnapshot(0, StackSnapshotCB, 0, &data, nullptr, 0))) {
+		// TODO
 	}
 
 	return S_OK;
@@ -472,11 +475,12 @@ std::string CoreProfiler::GetTypeName(mdTypeDef type, ModuleID module) const {
 	CComPtr<IMetaDataImport> spMetadata;
 	if (SUCCEEDED(_info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&spMetadata)))) {
 		WCHAR name[256];
-		ULONG nameSize;
+		ULONG nameSize = 256;
 		DWORD flags;
 		mdTypeDef baseType;
-		if (SUCCEEDED(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType)))
+		if (SUCCEEDED(spMetadata->GetTypeDefProps(type, name, 256, &nameSize, &flags, &baseType))) {
 			return OS::UnicodeToAnsi(name);
+		}
 	}
 	return "";
 }
@@ -505,7 +509,7 @@ std::string CoreProfiler::GetMethodName(FunctionID function) const {
 
 HRESULT __stdcall CoreProfiler::StackSnapshotCB(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAME_INFO frameInfo,
 	ULONG32 contextSize, BYTE context[], void* clientData) {
-
+	// TODO
 	return S_OK;
 }
 
